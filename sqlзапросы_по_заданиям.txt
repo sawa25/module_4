@@ -14,3 +14,13 @@ FROM dst_project.flights f
 SELECT count(f.status)
 FROM dst_project.flights f
 WHERE f.status='Departed'
+
+3)
+SELECT count(s.seat_no)
+FROM dst_project.seats s
+WHERE s.aircraft_code='773'
+
+4)
+select count(f.flight_id)
+from dst_project.flights f
+where f.actual_arrival <date('2017-09-01 23:59:59') and f.actual_departure>=date('2017-04-01 00:00:00') and f.status='Arrived'
