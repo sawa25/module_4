@@ -4,3 +4,13 @@ SELECT a.city,
 FROM dst_project.airports a
 GROUP BY a.city
 ORDER BY 2 DESC
+
+--задание 4.2
+1)
+SELECT DISTINCT f.status
+FROM dst_project.flights f
+
+2)
+SELECT count(f.status)
+FROM dst_project.flights f
+WHERE f.status='Departed'
