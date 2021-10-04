@@ -1,0 +1,6 @@
+--задание 4.1
+SELECT a.city,
+       count(a.airport_code)
+FROM dst_project.airports a
+GROUP BY a.city
+ORDER BY 2 DESC
