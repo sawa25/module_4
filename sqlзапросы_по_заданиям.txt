@@ -1,9 +1,3 @@
-/*select t.book_ref,count(t.ticket_no)
-from dst_project.tickets t
-group by t.book_ref
-order by 2 desc
-limit 5
-*/
 
 with aircraft_seats_count as 
 (
@@ -13,20 +7,20 @@ join dst_project.aircrafts a on s.aircraft_code=a.aircraft_code
 group by a.aircraft_code
 ),
 mainds as (
-SELECT *
-FROM dst_project.flights
+SELECT *,f.scheduled_arrival-f.scheduled_departure dt
+FROM dst_project.flights f
 WHERE departure_airport = 'AAQ'
   AND (date_trunc('month', scheduled_departure) in ('2017-01-01','2017-02-01', '2017-12-01'))
   AND status not in ('Cancelled')
 limit 20
 )
-select mainds.flight_id,count(tf.ticket_no) count_seats_sold,aircraft_seats_count.count_seats count_seats_total
+select date_part('hour',mainds.dt)*60+date_part('minute',mainds.dt) flight_duaration, mainds.arrival_airport, mainds.flight_id,sum(tf.amount) money_collected,
+count(tf.ticket_no) count_seats_sold,
+aircraft_seats_count.count_seats count_seats_total
 from dst_project.ticket_flights tf
 join mainds on tf.flight_id=mainds.flight_id
 join aircraft_seats_count on aircraft_seats_count.aircraft_code=mainds.aircraft_code
-group by mainds.flight_id,aircraft_seats_count.count_seats
-
-
+group by mainds.dt,mainds.arrival_airport,mainds.flight_id,aircraft_seats_count.count_seats
 
 
 
