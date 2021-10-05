@@ -21,6 +21,100 @@ FROM dst_project.seats s
 WHERE s.aircraft_code='773'
 
 4)
-select count(f.flight_id)
-from dst_project.flights f
-where f.actual_arrival <date('2017-09-01 23:59:59') and f.actual_departure>=date('2017-04-01 00:00:00') and f.status='Arrived'
+SELECT count(f.flight_id)
+FROM dst_project.flights f
+WHERE (f.actual_arrival BETWEEN '2017-04-01' AND '2017-09-01')
+  AND f.status='Arrived'
+  
+--задание 4.3
+1)
+SELECT count(f.flight_id)
+FROM dst_project.flights f
+WHERE f.status='Cancelled'
+
+2)
+SELECT count(a.aircraft_code),
+       'Bo'
+FROM dst_project.aircrafts a
+WHERE a.aircraft_code in ('763',
+                          '773',
+                          '733')
+UNION ALL
+SELECT count(a.aircraft_code),
+       'Su'
+FROM dst_project.aircrafts a
+WHERE a.aircraft_code in ('SU9')
+UNION ALL
+SELECT count(a.aircraft_code),
+       'Ai'
+FROM dst_project.aircrafts a
+WHERE a.aircraft_code in ('321',
+                          '319',
+                          '320')
+                          
+/*больше соответствует заданию 2)
+SELECT count(f.flight_id),
+       'Bo'
+FROM dst_project.flights f
+WHERE f.aircraft_code in ('763',
+                          '773',
+                          '733')
+UNION ALL
+SELECT count(f.flight_id),
+       'Su'
+FROM dst_project.flights f
+WHERE f.aircraft_code in ('SU9')
+UNION ALL
+SELECT count(f.flight_id),
+       'Ai'
+FROM dst_project.flights f
+WHERE f.aircraft_code in ('321',
+                          '319',
+                          '320')
+  */                        
+3)
+SELECT count(a.airport_code),
+       'Europe'
+FROM dst_project.airports a
+WHERE a.timezone like 'Europe%'
+UNION ALL
+SELECT count(a.airport_code),
+       'Australia'
+FROM dst_project.airports a
+WHERE a.timezone like 'Australia%'
+UNION ALL
+SELECT count(a.airport_code),
+       'Asia'
+FROM dst_project.airports a
+WHERE a.timezone like 'Asia%'
+
+4)
+SELECT f.flight_id,
+       f.actual_arrival-f.scheduled_arrival
+FROM dst_project.flights f
+WHERE f.actual_arrival IS NOT NULL
+  AND f.scheduled_arrival IS NOT NULL
+ORDER BY 2 DESC
+
+--задание 4.4
+1)
+SELECT f.scheduled_departure
+FROM dst_project.flights f
+ORDER BY 1 DESC
+
+2)
+SELECT f.scheduled_arrival-f.scheduled_departure dt,
+       extract(MINUTE
+               FROM (f.scheduled_arrival-f.scheduled_departure))+60*extract(HOUR
+                                                                            FROM (f.scheduled_arrival-f.scheduled_departure))
+FROM dst_project.flights f
+ORDER BY 1 DESC
+
+3)
+SELECT f.scheduled_arrival-f.scheduled_departure dt,
+       f.arrival_airport,
+       f.departure_airport
+FROM dst_project.flights f
+ORDER BY 1 DESC
+
+
