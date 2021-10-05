@@ -16,7 +16,7 @@ WHERE departure_airport = 'AAQ'
 )
 select mainds.flight_id, mainds.flight_no,
 sum(coalesce(tf.amount,0))/(date_part('hour',mainds.dt)*60+date_part('minute',mainds.dt)) flight_minute_profit,
-sum(tf.amount) money_collected,
+sum(coalesce(tf.amount,0)) money_collected,
 mainds.arrival_airport, 
 EXTRACT(DOW FROM mainds.scheduled_departure),
 mainds.scheduled_departure,
@@ -31,10 +31,10 @@ group by mainds.flight_id, mainds.flight_no,mainds.scheduled_departure,mainds.dt
 mainds.arrival_airport,aircraft_seats_count.count_seats
 order by 3 desc
 )
-select avg(prepared.flight_minute_profit) profit,prepared.flight_no,prepared.date_part,prepared.arrival_airport,avg(prepared.occupancy) occupancy
+select avg(prepared.flight_minute_profit) profit,avg(prepared.money_collected) money,prepared.flight_no,prepared.date_part,prepared.arrival_airport,avg(prepared.occupancy) occupancy
 from prepared
 group by prepared.flight_no,prepared.date_part,prepared.arrival_airport
-order by  avg(prepared.flight_minute_profit) 
+order by  1 
 
 
 
