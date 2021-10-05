@@ -1,4 +1,4 @@
-
+with prepared as (
 with aircraft_seats_count as 
 (
 SELECT count(s.seat_no) count_seats,a.aircraft_code
@@ -12,20 +12,29 @@ FROM dst_project.flights f
 WHERE departure_airport = 'AAQ'
   AND (date_trunc('month', scheduled_departure) in ('2017-01-01','2017-02-01', '2017-12-01'))
   AND status not in ('Cancelled')
-limit 20
+--limit 20
 )
-select date_part('hour',mainds.dt)*60+date_part('minute',mainds.dt) flight_duaration, mainds.arrival_airport, mainds.flight_id,sum(tf.amount) money_collected,
+select mainds.flight_id, mainds.flight_no,
+sum(coalesce(tf.amount,0))/(date_part('hour',mainds.dt)*60+date_part('minute',mainds.dt)) flight_minute_profit,
+sum(tf.amount) money_collected,
+mainds.arrival_airport, 
+EXTRACT(DOW FROM mainds.scheduled_departure),
+mainds.scheduled_departure,
+count(tf.ticket_no)*100/aircraft_seats_count.count_seats occupancy,
+date_part('hour',mainds.dt)*60+date_part('minute',mainds.dt) flight_duaration, 
 count(tf.ticket_no) count_seats_sold,
 aircraft_seats_count.count_seats count_seats_total
-from dst_project.ticket_flights tf
-join mainds on tf.flight_id=mainds.flight_id
-join aircraft_seats_count on aircraft_seats_count.aircraft_code=mainds.aircraft_code
-group by mainds.dt,mainds.arrival_airport,mainds.flight_id,aircraft_seats_count.count_seats
-
-
-
-
-
+from mainds
+left join dst_project.ticket_flights tf on tf.flight_id=mainds.flight_id
+left join aircraft_seats_count on aircraft_seats_count.aircraft_code=mainds.aircraft_code
+group by mainds.flight_id, mainds.flight_no,mainds.scheduled_departure,mainds.dt,
+mainds.arrival_airport,aircraft_seats_count.count_seats
+order by 3 desc
+)
+select avg(prepared.flight_minute_profit) profit,prepared.flight_no,prepared.date_part,prepared.arrival_airport,avg(prepared.occupancy) occupancy
+from prepared
+group by prepared.flight_no,prepared.date_part,prepared.arrival_airport
+order by  avg(prepared.flight_minute_profit) 
 
 
 
