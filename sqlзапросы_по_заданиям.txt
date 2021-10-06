@@ -1,44 +1,6 @@
-with prepared as (
-with aircraft_seats_count as 
-(
-SELECT count(s.seat_no) count_seats,a.aircraft_code
-FROM dst_project.seats s 
-join dst_project.aircrafts a on s.aircraft_code=a.aircraft_code
-group by a.aircraft_code
-),
-mainds as (
-SELECT *,f.scheduled_arrival-f.scheduled_departure dt
-FROM dst_project.flights f
-WHERE departure_airport = 'AAQ'
-  AND (date_trunc('month', scheduled_departure) in ('2017-01-01','2017-02-01', '2017-12-01'))
-  AND status not in ('Cancelled')
---limit 20
-)
-select mainds.flight_id, mainds.flight_no,
-sum(coalesce(tf.amount,0))/(date_part('hour',mainds.dt)*60+date_part('minute',mainds.dt)) flight_minute_profit,
-sum(coalesce(tf.amount,0)) money_collected,
-mainds.arrival_airport, 
-EXTRACT(DOW FROM mainds.scheduled_departure),
-mainds.scheduled_departure,
-count(tf.ticket_no)*100/aircraft_seats_count.count_seats occupancy,
-date_part('hour',mainds.dt)*60+date_part('minute',mainds.dt) flight_duaration, 
-count(tf.ticket_no) count_seats_sold,
-aircraft_seats_count.count_seats count_seats_total
-from mainds
-left join dst_project.ticket_flights tf on tf.flight_id=mainds.flight_id
-left join aircraft_seats_count on aircraft_seats_count.aircraft_code=mainds.aircraft_code
-group by mainds.flight_id, mainds.flight_no,mainds.scheduled_departure,mainds.dt,
-mainds.arrival_airport,aircraft_seats_count.count_seats
-order by 3 desc
-)
-select avg(prepared.flight_minute_profit) profit,avg(prepared.money_collected) money,prepared.flight_no,prepared.date_part,prepared.arrival_airport,avg(prepared.occupancy) occupancy
-from prepared
-group by prepared.flight_no,prepared.date_part,prepared.arrival_airport
-order by  1 
 
 
-
-
+--sql код предпроектных заданий ЮНИТА 4.
 
 --задание 4.1
 SELECT a.city,
@@ -242,3 +204,65 @@ WHERE s.aircraft_code in
      WHERE f.departure_airport in ('AAQ') )
 GROUP BY s.aircraft_code,
          a.model
+         
+         
+         
+         
+         
+         
+WITH prepared AS
+  (
+--################################
+--################################
+--данный SQL код подготавливает датасет для Юпитернотбука
+WITH aircraft_seats_count AS
+     (SELECT count(s.seat_no) count_seats,
+             a.aircraft_code
+      FROM dst_project.seats s
+      JOIN dst_project.aircrafts a ON s.aircraft_code=a.aircraft_code
+      GROUP BY a.aircraft_code),
+      mainds AS
+     (SELECT *,
+             f.scheduled_arrival-f.scheduled_departure dt
+      FROM dst_project.flights f
+      WHERE departure_airport = 'AAQ'
+        AND (date_trunc('month', scheduled_departure) in ('2017-01-01',
+                                                          '2017-02-01',
+                                                          '2017-12-01'))
+        AND status not in ('Cancelled') ) SELECT mainds.flight_id,
+                                                 mainds.flight_no,
+                                                 sum(coalesce(tf.amount, 0))/(date_part('hour', mainds.dt)*60+date_part('minute', mainds.dt)) flight_minute_profit,
+                                                 sum(coalesce(tf.amount, 0)) money_collected,
+                                                 mainds.arrival_airport,
+                                                 EXTRACT(DOW
+                                                         FROM mainds.scheduled_departure),
+                                                 mainds.scheduled_departure,
+                                                 count(tf.ticket_no)*100/aircraft_seats_count.count_seats occupancy,
+                                                 date_part('hour', mainds.dt)*60+date_part('minute', mainds.dt) flight_duaration,
+                                                 count(tf.ticket_no) count_seats_sold,
+                                                 aircraft_seats_count.count_seats count_seats_total
+   FROM mainds
+   LEFT JOIN dst_project.ticket_flights tf ON tf.flight_id=mainds.flight_id
+   LEFT JOIN aircraft_seats_count ON aircraft_seats_count.aircraft_code=mainds.aircraft_code
+   GROUP BY mainds.flight_id,
+            mainds.flight_no,
+            mainds.scheduled_departure,
+            mainds.dt,
+            mainds.arrival_airport,
+            aircraft_seats_count.count_seats
+   ORDER BY 3 DESC 
+--################################
+--################################
+ )
+SELECT avg(prepared.flight_minute_profit) profit,
+       avg(prepared.money_collected) MONEY,
+                                     prepared.flight_no,
+                                     prepared.date_part,
+                                     prepared.arrival_airport,
+                                     avg(prepared.occupancy) occupancy
+FROM prepared
+GROUP BY prepared.flight_no,
+         prepared.date_part,
+         prepared.arrival_airport
+ORDER BY 1
+         
